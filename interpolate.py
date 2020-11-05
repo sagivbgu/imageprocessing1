@@ -1,7 +1,5 @@
 import math
-from transform import calc_coordinates
-from transform import does_exceed
-
+from transform import calc_coordinates, does_exceed
 
 # def find_nearest_pixel(img, i, j):
 #     try:
@@ -17,6 +15,7 @@ from transform import does_exceed
 #     except IndexError:
 #         return img[i][j]
 #
+
 
 def interpolation_nearest(new_img, original_img, inverse_transformation):
     new_rows, new_cols = new_img.shape
@@ -52,7 +51,9 @@ def interpolation_bilinear(new_img, original_img, inverse_transformation):
             intensity_bottom = (1 - width) * original_img[bottom_i][left_j] + width * original_img[bottom_i][right_j]
             new_img[new_i][new_j] = (1 - height) * intensity_bottom + height * intensity_top
 
-# def interpolation_cubic(new_img, original_img, inverse_transformation):
+
+def interpolation_cubic(new_img, original_img, inverse_transformation):
+    pass
 #     new_rows, new_cols = new_img.shape
 #     old_rows, old_cols = original_img.shape
 #     for new_i in range(new_rows):

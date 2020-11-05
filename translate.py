@@ -24,10 +24,18 @@ def translate_image(image_path, transformations_path, quality):
     transformations = load_trans_file(transformations_path)
 
     new_img, mat, inv_mat = transform.apply_trans_on_img(transformations, img)
-    #interpolate.interpolation_nearest(new_img, img, inv_mat)
-    cv2.imwrite('out2.png', new_img)
 
-    return new_img, mat, inv_mat
+    if quality == "N":
+        interpolate.interpolation_nearest(new_img, img, inv_mat)
+    elif quality == "B":
+        interpolate.interpolation_bilinear(new_img, img, inv_mat)
+    elif quality == "C":
+        interpolate.interpolation_cubic(new_img, img, inv_mat)
+    else:
+        print("Invalid Input")
+        return
+
+    cv2.imwrite('out_{0}.png'.format(quality), new_img)
 
 
 def main():
