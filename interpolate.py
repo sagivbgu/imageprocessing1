@@ -42,11 +42,11 @@ def interpolation_bilinear(new_img, original_img, inverse_transformation):
         for new_j in range(new_cols):
             old_i, old_j = calc_coordinates(inverse_transformation, new_i, new_j)
             top_i = 0 if round(old_i) == 0 else round(old_i) - 1
-            bottom_i = round(old_rows) - 1 if round(old_i) == old_rows else round(old_i)
+            bottom_i = top_i if top_i == old_rows - 1 else top_i + 1
             left_j = 0 if round(old_j) == 0 else round(old_j) - 1
-            right_j = round(old_cols) if round(old_j) == old_cols else round(old_j)
-            width = math.fabs(0.5 - fract(old_i))
-            height = math.fabs(0.5 - fract(old_j))
+            right_j = left_j if left_j == old_cols - 1 else left_j + 1
+            width = math.fabs(old_j - left_j - 0.5)
+            height = math.fabs(old_i - bottom_i - 0.5)
 
             intensity_top = (1 - width) * original_img[top_i][left_j] + width * original_img[top_i][right_j]
             intensity_bottom = (1 - width) * original_img[bottom_i][left_j] + width * original_img[bottom_i][right_j]
