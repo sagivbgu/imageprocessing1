@@ -42,12 +42,29 @@ def interpolation_bilinear(new_img, original_img, inverse_transformation):
         for new_j in range(new_cols):
             old_i, old_j = calc_coordinates(inverse_transformation, new_i, new_j)
             top_i = 0 if round(old_i) == 0 else round(old_i) - 1
-            bottom_i = old_rows - 1 if round(old_i) == old_rows - 1 else round(old_i)
+            bottom_i = round(old_rows) - 1 if round(old_i) == old_rows else round(old_i)
             left_j = 0 if round(old_j) == 0 else round(old_j) - 1
-            right_j = old_cols if round(old_j) == old_cols - 1 else round(old_j)
+            right_j = round(old_cols) if round(old_j) == old_cols else round(old_j)
             width = math.fabs(0.5 - fract(old_i))
             height = math.fabs(0.5 - fract(old_j))
 
             intensity_top = (1 - width) * original_img[top_i][left_j] + width * original_img[top_i][right_j]
             intensity_bottom = (1 - width) * original_img[bottom_i][left_j] + width * original_img[bottom_i][right_j]
             new_img[new_i][new_j] = (1 - height) * intensity_bottom + height * intensity_top
+
+# def interpolation_cubic(new_img, original_img, inverse_transformation):
+#     new_rows, new_cols = new_img.shape
+#     old_rows, old_cols = original_img.shape
+#     for new_i in range(new_rows):
+#         for new_j in range(new_cols):
+#             old_i, old_j = calc_coordinates(inverse_transformation, new_i, new_j)
+#             top_i = 0 if round(old_i) == 0 else round(old_i) - 1
+#             bottom_i = old_rows - 1 if round(old_i) == old_rows - 1 else round(old_i)
+#             left_j = 0 if round(old_j) == 0 else round(old_j) - 1
+#             right_j = old_cols if round(old_j) == old_cols - 1 else round(old_j)
+#             width = math.fabs(0.5 - fract(old_i))
+#             height = math.fabs(0.5 - fract(old_j))
+#
+#             intensity_top = (1 - width) * original_img[top_i][left_j] + width * original_img[top_i][right_j]
+#             intensity_bottom = (1 - width) * original_img[bottom_i][left_j] + width * original_img[bottom_i][right_j]
+#             new_img[new_i][new_j] = (1 - height) * intensity_bottom + height * intensity_top
