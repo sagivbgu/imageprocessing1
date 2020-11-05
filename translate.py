@@ -23,7 +23,9 @@ def translate_image(image_path, transformations_path, quality):
     img = load_image_file(image_path)
     transformations = load_trans_file(transformations_path)
 
-    # m = transformation_to_matrices(transformations)
+    m = transform.transformation_to_matrices(transformations)
+    return m # Just for now
+
     # new_img = interpolate(img, quality)  # quality: nearest neighbor, bilinear interpolation, or cubic
     # save_image(new_img)
 
