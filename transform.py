@@ -1,6 +1,4 @@
-from translate import *
 import numpy as np
-import cv2 as cv
 from math import cos, sin, radians
 from functools import reduce
 
@@ -73,8 +71,8 @@ def create_rotate_matrix(theta, center_x, center_y):
     t2 = create_translate_matrix(-center_x, -center_y)
 
     r = np.float32([
-        [cos(theta), sin(theta), 0],
-        [-sin(theta), cos(theta), 0],
+        [cos(radians(theta)), sin(radians(theta)), 0],
+        [-sin(radians(theta)), cos(radians(theta)), 0],
         [0, 0, 1]
     ])
 
@@ -97,7 +95,6 @@ def create_translate_matrix(x, y):
 
 
 def apply_geo_matrix_on_image(final_mat, img):
-    pixles = 0
     old_height, old_width = img.shape
     new_height, new_width = determine_new_boundaries(final_mat, img)
 
@@ -105,13 +102,12 @@ def apply_geo_matrix_on_image(final_mat, img):
 
     for y in range(old_height):
         for x in range(old_width):
-            new_x, new_y = calc_coordinates(x, y)
+            new_x, new_y = calc_coordinates(final_mat, x, y)
             new_x = int(round(new_x))
             new_y = int(round(new_y))
             if not does_exceed(new_x, new_y, new_height, new_width):
-                pixles += 1
                 new_img[new_x, new_y] = img[x, y]
-    print("Changed {0} pixels".format(pixles))
+
     return new_img
 
 
