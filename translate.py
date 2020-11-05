@@ -1,12 +1,12 @@
 from sys import argv
+import cv2
 import transform
 import interpolate
 
 
 def load_image_file(path):
     try:
-        with open(path, 'rb') as img_file:
-            return img_file.read()
+        return cv2.imread(path, cv2.IMREAD_GRAYSCALE)
     except Exception as e:
         raise Exception("Error reading image file {0}".format(path)) from e
 
