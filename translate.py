@@ -24,7 +24,8 @@ def translate_image(image_path, transformations_path, quality):
     transformations = load_trans_file(transformations_path)
 
     new_img, mat, inv_mat = transform.apply_trans_on_img(transformations, img)
-    cv2.imwrite('new3.png', new_img)
+    #interpolate.interpolation_nearest(new_img, img, inv_mat)
+    cv2.imwrite('out2.png', new_img)
 
     return new_img, mat, inv_mat
 

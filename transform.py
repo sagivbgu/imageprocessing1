@@ -147,14 +147,12 @@ def apply_trans_on_img(trans, img):
 
 
 def does_exceed(x, y, h, w):
-    if x < 0 or y < 0 or x > w or y > h:
-        return True
-    return False
+    return x < 0 or y < 0 or x > w - 1 or y > h - 1
 
 
 def calc_center(img):
     h, w = img.shape
-    return w/2, h/2
+    return w / 2, h / 2
 
 
 def calc_coordinates(mat, x, y):
