@@ -84,7 +84,7 @@ def apply_geo_matrix_on_image(final_mat, img):
     old_height, old_width = img.shape
     new_height, new_width = determine_new_boundaries(final_mat, img)
 
-    new_img = create_empty_img(new_height, new_width)
+    new_img = create_empty_img(new_height + 1, new_width + 1)
     print(new_img.shape)
     for y in range(old_height):
         for x in range(old_width):
@@ -103,13 +103,13 @@ def determine_new_boundaries(final_mat, img):
         final_mat.dot(np.float32([0, 0, 1]))[0],
         final_mat.dot(np.float32([0, width - 1, 1]))[0],
         final_mat.dot(np.float32([height - 1, 0, 1]))[0],
-        final_mat.dot(np.float32([height - 1, width - 1, 1]))[0]]))) + 1
+        final_mat.dot(np.float32([height - 1, width - 1, 1]))[0]])))
 
     max_width = int(floor(max([
         final_mat.dot(np.float32([0, 0, 1]))[1],
         final_mat.dot(np.float32([0, width - 1, 1]))[1],
         final_mat.dot(np.float32([height - 1, 0, 1]))[1],
-        final_mat.dot(np.float32([height - 1, width - 1, 1]))[1]]))) + 1
+        final_mat.dot(np.float32([height - 1, width - 1, 1]))[1]])))
 
     return max_height, max_width
 
