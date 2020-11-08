@@ -1,8 +1,6 @@
 import numpy as np
 import math
-from transform import calc_coordinates
-from transform import does_exceed
-
+from transform import calc_coordinates, does_exceed
 
 # def find_nearest_pixel(img, i, j):
 #     try:
