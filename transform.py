@@ -1,7 +1,6 @@
 import numpy as np
-from math import cos, sin, radians, floor
+from math import cos, sin, radians
 from functools import reduce
-
 
 def apply_trans_on_img(trans, img):
     final_mat = transformation_to_matrices(trans, img)
@@ -14,6 +13,7 @@ def transformation_to_matrices(trans_gen, img):
     return multiple_matrices(create_matrices(trans_gen, img))
 
 
+# TODO: fix problem when rotating - do not cut the picture
 def apply_geo_matrix_on_image(final_mat, img):
     old_height, old_width = img.shape
     new_height, new_width = determine_new_boundaries(final_mat, img)
@@ -89,22 +89,30 @@ def create_translate_matrix(x, y):
     ])
 
 
-def determine_new_boundaries(final_mat, img):
+def determine_new_boundaries(final_mat, img, to_shift=False):
     height, width = img.shape
 
-    max_height = round(max([
-        final_mat.dot(np.float32([0, 0, 1]))[0],
-        final_mat.dot(np.float32([0, width - 1, 1]))[0],
-        final_mat.dot(np.float32([height - 1, 0, 1]))[0],
-        final_mat.dot(np.float32([height - 1, width - 1, 1]))[0]]))
+    tl = final_mat.dot(np.float32([0, 0, 1]))
+    tr = final_mat.dot(np.float32([0, width - 1, 1]))
+    bl = final_mat.dot(np.float32([height - 1, 0, 1]))
+    br = final_mat.dot(np.float32([height - 1, width - 1, 1]))
 
-    max_width = round(max([
-        final_mat.dot(np.float32([0, 0, 1]))[1],
-        final_mat.dot(np.float32([0, width - 1, 1]))[1],
-        final_mat.dot(np.float32([height - 1, 0, 1]))[1],
-        final_mat.dot(np.float32([height - 1, width - 1, 1]))[1]]))
+    max_height = round(max(tl[0], tr[0], bl[0], br[0]))
+    min_height = round(min(tl[0], tr[0], bl[0], br[0]))
 
-    return max_height, max_width
+    max_width = round(max(tl[1], tr[1], bl[1], br[1]))
+    min_width = round(min(tl[1], tr[1], bl[1], br[1]))
+
+    new_h = max_height
+    new_w = max_width
+
+    if to_shift:
+        delta_h = abs(max_height - min_height)
+        delta_w = abs(max_width - min_width)
+        new_h = max_height + delta_h
+        new_w = max_width + delta_w
+
+    return new_h, new_w
 
 
 def create_empty_img(h, w):
