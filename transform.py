@@ -26,7 +26,7 @@ def apply_geo_matrix_on_image(final_mat, img):
             new_x = round(new_x)
             new_y = round(new_y)
             if not does_exceed(new_x, new_y, new_height, new_width):
-                new_img[new_x, new_y] = img[x, y]
+                new_img[new_y, new_x] = img[y, x]
 
     return new_img
 
@@ -96,21 +96,25 @@ def determine_new_boundaries(final_mat, img, to_shift=False):
     tr = final_mat.dot(np.float32([0, width - 1, 1]))
     bl = final_mat.dot(np.float32([height - 1, 0, 1]))
     br = final_mat.dot(np.float32([height - 1, width - 1, 1]))
+    print("tl: {0}".format(tl))
+    print("tr: {0}".format(tr))
+    print("bl: {0}".format(bl))
+    print("br: {0}".format(br))
 
-    max_height = round(max(tl[0], tr[0], bl[0], br[0]))
-    min_height = round(min(tl[0], tr[0], bl[0], br[0]))
+    max_width = round(max(tl[0], tr[0], bl[0], br[0]))
+    min_width = round(min(tl[0], tr[0], bl[0], br[0]))
 
-    max_width = round(max(tl[1], tr[1], bl[1], br[1]))
-    min_width = round(min(tl[1], tr[1], bl[1], br[1]))
+    max_height = round(max(tl[1], tr[1], bl[1], br[1]))
+    min_height = round(min(tl[1], tr[1], bl[1], br[1]))
 
-    new_h = max_height
     new_w = max_width
+    new_h = max_height
 
     if to_shift:
-        delta_h = abs(max_height - min_height)
         delta_w = abs(max_width - min_width)
-        new_h = max_height + delta_h
+        delta_h = abs(max_height - min_height)
         new_w = max_width + delta_w
+        new_h = max_height + delta_h
 
     return new_h, new_w
 
