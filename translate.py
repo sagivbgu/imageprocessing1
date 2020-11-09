@@ -1,7 +1,7 @@
 from sys import argv
 import cv2
 import transform
-import interpolate
+from interpolate import interpolate, interpolate_n, interpolate_b, interpolate_c
 
 
 def load_image_file(path):
@@ -26,11 +26,11 @@ def translate_image(image_path, transformations_path, quality):
     new_img, mat, inv_mat = transform.apply_trans_on_img(transformations, img)
 
     if quality == "N":
-        interpolate.interpolation_nearest(new_img, img, inv_mat)
+        interpolate(new_img, img, inv_mat, interpolate_n)
     elif quality == "B":
-        interpolate.interpolation_bilinear(new_img, img, inv_mat)
+        interpolate(new_img, img, inv_mat, interpolate_b)
     elif quality == "C":
-        interpolate.interpolation_cubic(new_img, img, inv_mat)
+        interpolate(new_img, img, inv_mat, interpolate_c)
     else:
         print("Invalid Input")
         return
