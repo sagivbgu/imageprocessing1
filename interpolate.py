@@ -20,17 +20,27 @@ def fract(num):
 # Main interpolation loop, calling the desired interpolation function in each iteration
 def interpolate(new_img, original_img, inverse_transformation, interpolation_func):
     new_rows, new_cols = new_img.shape
-    old_rows, old_cols = original_img.shape
+    old_rows, old_cols = original_img.shape  # margined
 
     padding = 2 if interpolation_func == interpolate_cubic else 0
 
-    for new_y in range(padding, new_rows - padding):
-        for new_x in range(padding, new_cols - padding):
+    # now they are fixed to the original image size
+    old_rows -= 2 * padding
+    old_cols -= 2 * padding
+
+    # Go through any pixel in new_img, don't miss a single one
+    for new_y in range(0, new_rows):
+        for new_x in range(0, new_cols):
+            # got the x,y without(!!) considering padding
             old_x, old_y = calc_coordinates(inverse_transformation, new_x, new_y)
-            old_x += padding
-            old_y += padding
+            # check if it exceeded the original image (notice that old_rows and old_cols are normalized)
             if does_exceed(round(old_x), round(old_y), old_rows, old_cols):
                 continue
+
+            # here the pixel is in the original image
+            # but the interpolate function needs its coordinates in the padded original image
+            old_x += padding
+            old_y += padding
             new_value = interpolation_func(original_img, old_x, old_y, old_rows, old_cols)
             if new_value < MIN_INTENSITY:
                 new_value = MIN_INTENSITY

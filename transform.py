@@ -183,7 +183,7 @@ def add_margins(img, add_h=2, add_w=2):
     new_h = h + add_h * 2
     new_w = w + add_w * 2
 
-    new_image = create_empty_img(new_h, new_w, color=0)
+    new_image = create_empty_img(new_h, new_w)
     for y in range(h):
         for x in range(w):
             new_x = x + add_w
