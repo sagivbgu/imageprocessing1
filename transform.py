@@ -155,6 +155,7 @@ def create_empty_img(h, w, color=255):
 
 def multiple_matrices(mats):
     if len(mats) > 1:
+        mats.reverse() # (Tn...(T2(T1(img))...)
         return reduce(np.dot, mats)
     else:
         return mats[0]
