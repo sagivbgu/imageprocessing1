@@ -2,7 +2,14 @@ import numpy as np
 from math import cos, sin, radians
 from functools import reduce
 
+
 def apply_trans_on_img(trans, img):
+    """
+    Apply all the transformations listed in trans on the given img
+    :param trans: list of transformation from the trans_file
+    :param img: the image to process
+    :return: The geometric transformed image, the transformations matrix and its inverse
+    """
     final_mat = transformation_to_matrices(trans, img)
     new_img = apply_geo_matrix_on_image(final_mat, img)
 
@@ -13,11 +20,12 @@ def transformation_to_matrices(trans_gen, img):
     return multiple_matrices(create_matrices(trans_gen, img))
 
 
-# TODO: fix problem when rotating - do not cut the picture
 def apply_geo_matrix_on_image(final_mat, img):
+    # Calculate old and new size of the images
     old_height, old_width = img.shape
     new_height, new_width = determine_new_boundaries(final_mat, img)
 
+    # Create a new fitting image; all pixels are set to WHITE
     new_img = create_empty_img(new_height + 1, new_width + 1)
 
     for y in range(old_height):
@@ -32,11 +40,6 @@ def apply_geo_matrix_on_image(final_mat, img):
 
 
 def create_matrices(trans_gen, img):
-    # First we need to determine the center for rotation
-    center_x, center_y = calc_center(img)
-    center_x = float(center_x)
-    center_y = float(center_y)
-
     matrices = []
 
     for item in trans_gen:
@@ -47,7 +50,7 @@ def create_matrices(trans_gen, img):
         if command == "S":
             m = create_scale_matrix(x, y)
         elif command == "R":
-            m = create_rotate_matrix(x, center_x, center_y)
+            m = create_rotate_matrix(x, img)
         elif command == "T":
             m = create_translate_matrix(x, y)
 
@@ -64,7 +67,14 @@ def create_scale_matrix(x, y):
     ])
 
 
-def create_rotate_matrix(theta, center_x, center_y):
+def create_rotate_matrix(theta, img):
+    height, width = img.shape
+
+    # First we need to determine the center for rotation
+    center_x, center_y = calc_center(img)
+    center_x = float(center_x)
+    center_y = float(center_y)
+
     # First build translates matrices to rotate around the center
     t1 = create_translate_matrix(center_x, center_y)
     t2 = create_translate_matrix(-center_x, -center_y)
@@ -78,6 +88,15 @@ def create_rotate_matrix(theta, center_x, center_y):
 
     m = multiple_matrices([t1, r, t2])
 
+    _cos = np.abs(m[0, 0])
+    _sin = np.abs(m[0, 1])
+
+    new_width = int((height * _sin) + (width * _cos))
+    new_height = int((height * _cos) + (width * _sin))
+
+    m[0, 2] += (new_width / 2) - center_x
+    m[1, 2] += (new_height / 2) - center_y
+
     return m
 
 
@@ -89,40 +108,18 @@ def create_translate_matrix(x, y):
     ])
 
 
-def determine_new_boundaries(final_mat, img, to_shift=False):
+def determine_new_boundaries(final_mat, img):
     height, width = img.shape
-
-    # tl = final_mat.dot(np.float32([0, 0, 1]))
-    # tr = final_mat.dot(np.float32([0, width - 1, 1]))
-    # bl = final_mat.dot(np.float32([height - 1, 0, 1]))
-    # br = final_mat.dot(np.float32([height - 1, width - 1, 1]))
 
     tl_x, tl_y = calc_coordinates(final_mat, 0, 0)
     tr_x, tr_y = calc_coordinates(final_mat, width - 1, 0)
     bl_x, bl_y = calc_coordinates(final_mat, 0, height - 1)
     br_x, br_y = calc_coordinates(final_mat, width - 1, height - 1)
 
-    print("tl: ({0},{1})".format(tl_x, tl_y))
-    print("tr: ({0},{1})".format(tr_x, tr_y))
-    print("bl: ({0},{1})".format(bl_x, bl_y))
-    print("br: ({0},{1})".format(br_x, br_y))
-
     max_width = round(max(tl_x, tr_x, bl_x, br_x))
-    min_width = round(min(tl_x, tr_x, bl_x, br_x))
-
     max_height = round(max(tl_y, tr_y, bl_y, br_y))
-    min_height = round(min(tl_y, tr_y, bl_y, br_y))
 
-    new_w = max_width
-    new_h = max_height
-
-    if to_shift:
-        delta_w = abs(max_width - min_width)
-        delta_h = abs(max_height - min_height)
-        new_w = max_width + delta_w
-        new_h = max_height + delta_h
-
-    return new_h, new_w
+    return max_height, max_width
 
 
 def create_empty_img(h, w):
