@@ -11,6 +11,10 @@ BL_ROI = (-2, -1)
 BR_ROI = (-1, -1)
 
 
+class MatrixBoundaryError(Exception):
+    pass
+
+
 def fract(num):
     return num - math.floor(num)
 
@@ -24,7 +28,10 @@ def interpolate(new_img, original_img, inverse_transformation, interpolation_fun
             old_x, old_y = calc_coordinates(inverse_transformation, new_x, new_y)
             if does_exceed(round(old_x), round(old_y), old_rows, old_cols):
                 continue
-            new_value = interpolation_func(original_img, old_x, old_y, old_rows, old_cols, new_img, new_rows, new_cols)
+            try:
+                new_value = interpolation_func(original_img, old_x, old_y, old_rows, old_cols)
+            except MatrixBoundaryError:
+                continue
             if new_value < MIN_INTENSITY:
                 new_value = MIN_INTENSITY
             elif new_value > MAX_INTENSITY:
@@ -33,7 +40,7 @@ def interpolate(new_img, original_img, inverse_transformation, interpolation_fun
 
 
 def interpolate_n(original_img, old_x, old_y, old_rows, old_cols):
-    return original_img[old_y][old_x]
+    return original_img[round(old_y)][round(old_x)]
 
 
 def interpolate_b(original_img, old_x, old_y, old_rows, old_cols):
@@ -51,12 +58,16 @@ def interpolate_b(original_img, old_x, old_y, old_rows, old_cols):
 
 def interpolate_c(original_img, old_x, old_y, old_rows, old_cols):
     roi = get_roi(fract(old_x), fract(old_y))
-    matrix = get_matrix(roi)
+    weight_matrix = get_weight_matrix(roi)
     start_x, start_y = roi
     old_x = math.floor(old_x)
     old_y = math.floor(old_y)
     matrix_roi = original_img[old_y + start_y: old_y + start_y + 4, old_x + start_x: old_x + start_x + 4]
-    return calculate_cubic_new_value(matrix_roi, matrix)
+
+    try:
+        return calculate_cubic_new_value(matrix_roi, weight_matrix)
+    except ValueError:  # Index exceeds matrix
+        raise MatrixBoundaryError
 
 
 def get_roi(fract_x, fract_y):
@@ -79,17 +90,17 @@ def u(d):
 
 
 def get_cubic_matrix(start_x, start_y, d_x, d_y):
-    return ((u(math.fabs(x + d_x)) * u(math.fabs(y + d_y)) for x in range(start_x, start_x + 4))
-            for y in range(start_y, start_y + 4))
+    return tuple((tuple((u(math.fabs(x + d_x)) * u(math.fabs(y + d_y)) for x in range(start_x, start_x + 4)))
+                  for y in range(start_y, start_y + 4)))
 
 
 cubic_tl_matrix = get_cubic_matrix(*TL_ROI, 0.25, 0.25)
-cubic_tr_matrix = get_cubic_matrix(*TL_ROI, -0.25, 0.25)
+cubic_tr_matrix = get_cubic_matrix(*TR_ROI, -0.25, 0.25)
 cubic_bl_matrix = get_cubic_matrix(*BL_ROI, 0.25, -0.25)
-cubic_br_matrix = get_cubic_matrix(*BL_ROI, -0.25, -0.25)
+cubic_br_matrix = get_cubic_matrix(*BR_ROI, -0.25, -0.25)
 
 
-def get_matrix(roi):
+def get_weight_matrix(roi):
     if roi == TL_ROI:
         return cubic_tl_matrix
     if roi == TR_ROI:
