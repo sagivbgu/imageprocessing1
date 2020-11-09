@@ -92,20 +92,26 @@ def create_translate_matrix(x, y):
 def determine_new_boundaries(final_mat, img, to_shift=False):
     height, width = img.shape
 
-    tl = final_mat.dot(np.float32([0, 0, 1]))
-    tr = final_mat.dot(np.float32([0, width - 1, 1]))
-    bl = final_mat.dot(np.float32([height - 1, 0, 1]))
-    br = final_mat.dot(np.float32([height - 1, width - 1, 1]))
-    print("tl: {0}".format(tl))
-    print("tr: {0}".format(tr))
-    print("bl: {0}".format(bl))
-    print("br: {0}".format(br))
+    # tl = final_mat.dot(np.float32([0, 0, 1]))
+    # tr = final_mat.dot(np.float32([0, width - 1, 1]))
+    # bl = final_mat.dot(np.float32([height - 1, 0, 1]))
+    # br = final_mat.dot(np.float32([height - 1, width - 1, 1]))
 
-    max_width = round(max(tl[0], tr[0], bl[0], br[0]))
-    min_width = round(min(tl[0], tr[0], bl[0], br[0]))
+    tl_x, tl_y = calc_coordinates(final_mat, 0, 0)
+    tr_x, tr_y = calc_coordinates(final_mat, width - 1, 0)
+    bl_x, bl_y = calc_coordinates(final_mat, 0, height - 1)
+    br_x, br_y = calc_coordinates(final_mat, width - 1, height - 1)
 
-    max_height = round(max(tl[1], tr[1], bl[1], br[1]))
-    min_height = round(min(tl[1], tr[1], bl[1], br[1]))
+    print("tl: ({0},{1})".format(tl_x, tl_y))
+    print("tr: ({0},{1})".format(tr_x, tr_y))
+    print("bl: ({0},{1})".format(bl_x, bl_y))
+    print("br: ({0},{1})".format(br_x, br_y))
+
+    max_width = round(max(tl_x, tr_x, bl_x, br_x))
+    min_width = round(min(tl_x, tr_x, bl_x, br_x))
+
+    max_height = round(max(tl_y, tr_y, bl_y, br_y))
+    min_height = round(min(tl_y, tr_y, bl_y, br_y))
 
     new_w = max_width
     new_h = max_height
