@@ -21,6 +21,13 @@ def transformation_to_matrices(trans_gen, img):
 
 
 def apply_geo_matrix_on_image(final_mat, img):
+    """
+    Takes a geometric transformation matrix and transform each pixel from img
+    to its new location in the new image
+    :param final_mat: the geometric transformation matrix
+    :param img: the original image
+    :return: the new image
+    """
     # Calculate old and new size of the images
     old_height, old_width = img.shape
     new_height, new_width = determine_new_boundaries(final_mat, img)
@@ -28,6 +35,7 @@ def apply_geo_matrix_on_image(final_mat, img):
     # Create a new fitting image; all pixels are set to WHITE
     new_img = create_empty_img(new_height + 1, new_width + 1)
 
+    # copy old pixels to their new position
     for y in range(old_height):
         for x in range(old_width):
             new_x, new_y = calc_coordinates(final_mat, x, y)
@@ -40,6 +48,12 @@ def apply_geo_matrix_on_image(final_mat, img):
 
 
 def create_matrices(trans_gen, img):
+    """
+    Create the correct matrices according to the list from the file
+    :param trans_gen: the list of transformations
+    :param img: the original image
+    :return: a list of the transformation matrices
+    """
     matrices = []
 
     for item in trans_gen:
@@ -86,14 +100,20 @@ def create_rotate_matrix(theta, img):
         [0, 0, 1]
     ])
 
+    # The rotation matrix around the center
     m = multiple_matrices([t1, r, t2])
 
+    # Now we deal with the cut off at the edges
+    # Get the cosine and sine of the angle of rotation
     _cos = np.abs(m[0, 0])
     _sin = np.abs(m[0, 1])
 
+    # Calculate the new height and width
     new_width = int((height * _sin) + (width * _cos))
     new_height = int((height * _cos) + (width * _sin))
 
+    # Add to the matrix a translation to all coordinates
+    # Fix the error around the center
     m[0, 2] += (new_width / 2) - center_x
     m[1, 2] += (new_height / 2) - center_y
 
@@ -109,6 +129,12 @@ def create_translate_matrix(x, y):
 
 
 def determine_new_boundaries(final_mat, img):
+    """
+    Given an original image,
+    :param final_mat:
+    :param img:
+    :return:
+    """
     height, width = img.shape
 
     tl_x, tl_y = calc_coordinates(final_mat, 0, 0)
@@ -122,9 +148,9 @@ def determine_new_boundaries(final_mat, img):
     return max_height, max_width
 
 
-def create_empty_img(h, w):
+def create_empty_img(h, w, color=255):
     # All White
-    return 255 + np.zeros(shape=[h, w], dtype=np.uint8)
+    return color + np.zeros(shape=[h, w], dtype=np.uint8)
 
 
 def multiple_matrices(mats):
@@ -150,3 +176,19 @@ def calc_center(img):
 def calc_coordinates(mat, x, y):
     new_x, new_y, _ = mat.dot(np.float32([x, y, 1]))
     return new_x, new_y
+
+
+def add_margins(img, add_h=2, add_w=2):
+    h, w = img.shape
+    new_h = h + add_h * 2
+    new_w = w + add_w * 2
+
+    new_image = create_empty_img(new_h, new_w, color=0)
+    for y in range(h):
+        for x in range(w):
+            new_x = x + add_w
+            new_y = y + add_h
+            new_image[new_y, new_x] = img[y, x]
+
+    return new_image
+

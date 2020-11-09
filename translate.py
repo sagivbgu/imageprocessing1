@@ -30,6 +30,7 @@ def translate_image(image_path, transformations_path, quality):
     elif quality == "B":
         interpolate(new_img, img, inv_mat, interpolate_b)
     elif quality == "C":
+        img = transform.add_margins(img)
         interpolate(new_img, img, inv_mat, interpolate_c)
     else:
         print("Invalid Input")
