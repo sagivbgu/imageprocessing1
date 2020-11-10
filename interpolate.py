@@ -105,10 +105,9 @@ def get_roi(fract_x, fract_y):
         return BR_ROI
 
 
-
 def u(d):
     """
-    The weight function in the interpolation formula
+    The weight function in the interpolation formula (for a = -0.5)
     :param d: The distance (according to the formula)
     """
     if math.fabs(d) < 1:

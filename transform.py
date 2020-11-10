@@ -113,9 +113,6 @@ def determine_new_boundaries_and_fix_negative_translation(final_mat, img):
     :param img: the original image
     :return: the new image boundaries, and the fixed transformation matrix
     """
-    print("final_mat before: ")
-    print(final_mat)
-
     height, width = img.shape
 
     # Calculate the new height and width of the new image
@@ -142,8 +139,7 @@ def determine_new_boundaries_and_fix_negative_translation(final_mat, img):
     # calculate the minimum values of each
     min_width = round(min(tl_x, tr_x, bl_x, br_x))
     min_height = round(min(tl_y, tr_y, bl_y, br_y))
-    print("mins")
-    print(min_width, min_height)
+
     # in case one of them is negative, adjust the size of the new image
     # and fix the translation accordingly
     if min_height < 0:
@@ -161,7 +157,12 @@ def determine_new_boundaries_and_fix_negative_translation(final_mat, img):
 
 
 def create_empty_img(h, w, color=255):
-    # All White
+    """
+    Create a matrix representing an empty image
+    :param h: The desired height
+    :param w: The desired width
+    :param color: The color to fill the matrix with
+    """
     return color + np.zeros(shape=[h, w], dtype=np.uint8)
 
 
@@ -178,29 +179,31 @@ def inverse_mat(mat):
 
 
 def does_exceed(x, y, h, w):
+    """
+    Check whether a pixel (x, y) is outside the boundaries of a matrix with dimensions height * width
+    :param x: The pixel's x coordinate
+    :param y: The pixel's y coordinate
+    :param h: The matrix's height
+    :param w: The matrix's width
+    """
     return x < 0 or y < 0 or x > w - 1 or y > h - 1
 
 
 def calc_center(img):
+    """
+    Get the (x, y) positions of the pixel at the center of the image
+    :param img: The image
+    """
     h, w = img.shape
     return w / 2, h / 2
 
 
 def calc_coordinates(mat, x, y):
+    """
+    Apply the transformation matrix to a pixel (x, y)
+    :param mat: The transformation matrix
+    :param x: The pixel's x coordinate
+    :param y: The pixel's y coordinate
+    """
     new_x, new_y, _ = mat.dot(np.float32([x, y, 1]))
     return new_x, new_y
-
-
-def add_margins(img, add_h=2, add_w=2):
-    h, w = img.shape
-    new_h = h + add_h * 2
-    new_w = w + add_w * 2
-
-    new_image = create_empty_img(new_h, new_w)
-    for y in range(h):
-        for x in range(w):
-            new_x = x + add_w
-            new_y = y + add_h
-            new_image[new_y, new_x] = img[y, x]
-
-    return new_image
