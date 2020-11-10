@@ -40,7 +40,7 @@ def apply_geo_matrix_on_image(final_mat, img):
             new_x, new_y = calc_coordinates(final_mat, x, y)
             new_x = round(new_x)
             new_y = round(new_y)
-            if not does_exceed(new_x, new_y, new_height, new_width):
+            if not does_exceed(new_x, new_y, new_height, new_width):  # TODO: Remove?
                 new_img[new_y, new_x] = img[y, x]
 
     return new_img, final_mat
@@ -84,13 +84,11 @@ def create_scale_matrix(x, y):
 
 def create_rotate_matrix(theta):
     # The rotation matrix around (0,0)
-    r = np.float32([
+    return np.float32([
         [cos(radians(theta)), sin(radians(theta)), 0],
         [-sin(radians(theta)), cos(radians(theta)), 0],
         [0, 0, 1]
     ])
-
-    return r
 
 
 def create_translate_matrix(x, y):
@@ -105,7 +103,7 @@ def determine_new_boundaries_and_fix_negative_translation(final_mat, img):
     """
     Given an original image and a geometric transformation matrix, this function
     calculates the size of the new image.
-    If pixels are translated to negative coordinates (upwards or to the left), the function adjust the transformation
+    If pixels are translated to negative coordinates (upwards or to the left), the function adjusts the transformation
     so that these pixels will remain in the new image, but the size of the image will be increased downwards and to the
     right. The result is that no pixel is "cut off" the image, and boundaries are expanded, creating an "illusion"
     of translating upwards or to the left
