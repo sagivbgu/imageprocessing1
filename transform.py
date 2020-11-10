@@ -101,7 +101,7 @@ def create_rotate_matrix(theta, img, around_center=False):
     center_x = float(center_x)
     center_y = float(center_y)
 
-    # First build translates matrices to rotate around the center
+    # Build translate matrices to rotate around the center
     t1 = create_translate_matrix(center_x, center_y)
     t2 = create_translate_matrix(-center_x, -center_y)
 
@@ -139,7 +139,6 @@ def determine_new_boundaries(final_mat, img):
     dimensions (when the desired transformation will be applied).
     :param final_mat: The transformation matrix
     :param img: The original image
-    :return:
     """
     height, width = img.shape
 
@@ -161,7 +160,6 @@ def create_empty_img(h, w, color=255):
     :param h: The desired height
     :param w: The desired width
     :param color: The color to fill the matrix with
-    :return:
     """
     return color + np.zeros(shape=[h, w], dtype=np.uint8)
 
@@ -185,12 +183,15 @@ def does_exceed(x, y, h, w):
     :param y: The pixel's y coordinate
     :param h: The matrix's height
     :param w: The matrix's width
-    :return:
     """
     return x < 0 or y < 0 or x > w - 1 or y > h - 1
 
 
 def calc_center(img):
+    """
+    Get the (x, y) positions of the pixel at the center of the image
+    :param img: The image
+    """
     h, w = img.shape
     return w / 2, h / 2
 
@@ -201,22 +202,6 @@ def calc_coordinates(mat, x, y):
     :param mat: The transformation matrix
     :param x: The pixel's x coordinate
     :param y: The pixel's y coordinate
-    :return:
     """
     new_x, new_y, _ = mat.dot(np.float32([x, y, 1]))
     return new_x, new_y
-
-
-def add_margins(img, add_h=2, add_w=2):
-    h, w = img.shape
-    new_h = h + add_h * 2
-    new_w = w + add_w * 2
-
-    new_image = create_empty_img(new_h, new_w)
-    for y in range(h):
-        for x in range(w):
-            new_x = x + add_w
-            new_y = y + add_h
-            new_image[new_y, new_x] = img[y, x]
-
-    return new_image
