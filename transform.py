@@ -83,7 +83,17 @@ def create_scale_matrix(x, y):
     ])
 
 
-def create_rotate_matrix(theta, img):
+def create_rotate_matrix(theta, img, around_center=False):
+    # The rotation matrix
+    r = np.float32([
+        [cos(radians(theta)), sin(radians(theta)), 0],
+        [-sin(radians(theta)), cos(radians(theta)), 0],
+        [0, 0, 1]
+    ])
+
+    if not around_center:
+        return r
+
     height, width = img.shape
 
     # First we need to determine the center for rotation
@@ -95,15 +105,8 @@ def create_rotate_matrix(theta, img):
     t1 = create_translate_matrix(center_x, center_y)
     t2 = create_translate_matrix(-center_x, -center_y)
 
-    # The rotation matrix
-    r = np.float32([
-        [cos(radians(theta)), sin(radians(theta)), 0],
-        [-sin(radians(theta)), cos(radians(theta)), 0],
-        [0, 0, 1]
-    ])
-
     # The rotation matrix around the center
-    m = multiple_matrices([t1, r, t2])
+    m = multiple_matrices([t2, r, t1])
 
     # Now we deal with the cut off at the edges
     # Get the cosine and sine of the angle of rotation
