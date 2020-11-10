@@ -123,7 +123,6 @@ def determine_new_boundaries_and_fix_negative_translation(final_mat, img):
     trans_on_x = final_mat[0, 2]
     trans_on_y = final_mat[1, 2]
 
-    # Now, fix negative translation
     # Get the coordinates of the corners
     tl_x, tl_y = calc_coordinates(final_mat, 0, 0)
     tr_x, tr_y = calc_coordinates(final_mat, width - 1, 0)
@@ -134,22 +133,38 @@ def determine_new_boundaries_and_fix_negative_translation(final_mat, img):
     min_width = round(min(tl_x, tr_x, bl_x, br_x))
     min_height = round(min(tl_y, tr_y, bl_y, br_y))
 
-    # in case one of them is negative, adjust the size of the new image
-    # and fix the translation accordingly
-    if min_height < 0:
-        new_height += round(abs(min_height))
-        trans_on_y += round(abs(min_height))
-    if min_width < 0:
-        new_width += round(abs(min_width))
-        trans_on_x += round(abs(min_width))
+    # == Fixing negative translation
+    # Now calculate the most significant translation
+    max_trans_on_x = max(round(abs(trans_on_x)), round(abs(min_width)))
+    max_trans_on_y = max(round(abs(trans_on_y)), round(abs(min_height)))
 
-    # adjust the size of the new image
-    new_width += round(abs(trans_on_x))
-    new_height += round(abs(trans_on_y))
+    # adjust the new size accordingly
+    new_width += max_trans_on_x
+    new_height += max_trans_on_y
 
-    # set the new translation scales
-    final_mat[0,2] = trans_on_x
-    final_mat[1,2] = trans_on_y
+    # set the new translation sizes
+    final_mat[0,2] += max_trans_on_x
+    final_mat[1,2] += max_trans_on_y
+
+    # == Check that now we are not out of bounds on the positive directions (downwards and to the right)
+    # Get the coordinates of the corners
+    tl_x, tl_y = calc_coordinates(final_mat, 0, 0)
+    tr_x, tr_y = calc_coordinates(final_mat, width - 1, 0)
+    bl_x, bl_y = calc_coordinates(final_mat, 0, height - 1)
+    br_x, br_y = calc_coordinates(final_mat, width - 1, height - 1)
+
+    # calculate the minimum values of each
+    max_width = round(max(tl_x, tr_x, bl_x, br_x))
+    max_height = round(max(tl_y, tr_y, bl_y, br_y))
+
+    if max_width > new_width:
+
+        delta_w = round(max_width - new_width)
+        new_width += delta_w
+
+    if max_height > new_height:
+        delta_h = round(max_height - new_height)
+        new_height += delta_h
 
     return new_height, new_width, final_mat
 
