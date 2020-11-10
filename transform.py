@@ -63,7 +63,7 @@ def create_matrices(trans_gen, img):
         if command == "S":
             m = create_scale_matrix(x, y)
         elif command == "R":
-            m = create_rotate_matrix(x, img)
+            m = create_rotate_matrix(x)
         elif command == "T":
             m = create_translate_matrix(x, y)
         else:
