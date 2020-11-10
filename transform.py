@@ -113,21 +113,17 @@ def determine_new_boundaries_and_fix_negative_translation(final_mat, img):
     :param img: the original image
     :return: the new image boundaries, and the fixed transformation matrix
     """
-    height, width = img.shape
-
     # Calculate the new height and width of the new image
+    height, width = img.shape
     _cos = np.abs(final_mat[0, 0])
     _sin = np.abs(final_mat[0, 1])
 
     new_width = int((height * _sin) + (width * _cos))
     new_height = int((height * _cos) + (width * _sin))
 
-    # enlarge the size of the new image according to the translation
+    # get the sizes of the current translation
     trans_on_x = final_mat[0, 2]
     trans_on_y = final_mat[1, 2]
-
-    new_width += round(abs(trans_on_x))
-    new_height += round(abs(trans_on_y))
 
     # Now, fix negative translation
     # Get the coordinates of the corners
@@ -148,6 +144,10 @@ def determine_new_boundaries_and_fix_negative_translation(final_mat, img):
     if min_width < 0:
         new_width += round(abs(min_width))
         trans_on_x += round(abs(min_width))
+
+    # adjust the size of the new image
+    new_width += round(abs(trans_on_x))
+    new_height += round(abs(trans_on_y))
 
     # set the new translation scales
     final_mat[0,2] = trans_on_x
