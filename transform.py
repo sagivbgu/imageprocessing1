@@ -132,13 +132,15 @@ def create_translate_matrix(x, y):
 
 def determine_new_boundaries(final_mat, img):
     """
-    Given an original image,
-    :param final_mat:
-    :param img:
+    Given an original image, calculate the new image's expected
+    dimensions (when the desired transformation will be applied).
+    :param final_mat: The transformation matrix
+    :param img: The original image
     :return:
     """
     height, width = img.shape
 
+    # tl stands for top-left, br stands for bottom-right, etc.
     tl_x, tl_y = calc_coordinates(final_mat, 0, 0)
     tr_x, tr_y = calc_coordinates(final_mat, width - 1, 0)
     bl_x, bl_y = calc_coordinates(final_mat, 0, height - 1)
@@ -151,7 +153,13 @@ def determine_new_boundaries(final_mat, img):
 
 
 def create_empty_img(h, w, color=255):
-    # All White
+    """
+    Create a matrix representing an empty image
+    :param h: The desired height
+    :param w: The desired width
+    :param color: The color to fill the matrix with
+    :return:
+    """
     return color + np.zeros(shape=[h, w], dtype=np.uint8)
 
 
@@ -168,6 +176,14 @@ def inverse_mat(mat):
 
 
 def does_exceed(x, y, h, w):
+    """
+    Check whether a pixel (x, y) is outside the boundaries of a matrix with dimensions height * width
+    :param x: The pixel's x coordinate
+    :param y: The pixel's y coordinate
+    :param h: The matrix's height
+    :param w: The matrix's width
+    :return:
+    """
     return x < 0 or y < 0 or x > w - 1 or y > h - 1
 
 
@@ -177,6 +193,13 @@ def calc_center(img):
 
 
 def calc_coordinates(mat, x, y):
+    """
+    Apply the transformation matrix to a pixel (x, y)
+    :param mat: The transformation matrix
+    :param x: The pixel's x coordinate
+    :param y: The pixel's y coordinate
+    :return:
+    """
     new_x, new_y, _ = mat.dot(np.float32([x, y, 1]))
     return new_x, new_y
 
