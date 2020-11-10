@@ -11,8 +11,7 @@ def apply_trans_on_img(trans, img):
     :return: The geometric transformed image, the transformations matrix and its inverse
     """
     final_mat = transformation_to_matrices(trans, img)
-    new_img = apply_geo_matrix_on_image(final_mat, img)
-
+    new_img, final_mat = apply_geo_matrix_on_image(final_mat, img)
     return new_img, final_mat, inverse_mat(final_mat)
 
 
@@ -26,14 +25,14 @@ def apply_geo_matrix_on_image(final_mat, img):
     to its new location in the new image
     :param final_mat: the geometric transformation matrix
     :param img: the original image
-    :return: the new image
+    :return: the new image and the final mat (in case it was changed)
     """
     # Calculate old and new size of the images
     old_height, old_width = img.shape
-    new_height, new_width = determine_new_boundaries(final_mat, img)
+    new_height, new_width, final_mat = determine_new_boundaries_and_fix_negative_translation(final_mat, img)
 
     # Create a new fitting image; all pixels are set to WHITE
-    new_img = create_empty_img(new_height + 1, new_width + 1)
+    new_img = create_empty_img(new_height, new_width)
 
     # copy old pixels to their new position
     for y in range(old_height):
@@ -44,7 +43,7 @@ def apply_geo_matrix_on_image(final_mat, img):
             if not does_exceed(new_x, new_y, new_height, new_width):
                 new_img[new_y, new_x] = img[y, x]
 
-    return new_img
+    return new_img, final_mat
 
 
 def create_matrices(trans_gen, img):
@@ -83,46 +82,15 @@ def create_scale_matrix(x, y):
     ])
 
 
-def create_rotate_matrix(theta, img, around_center=False):
-    # The rotation matrix
+def create_rotate_matrix(theta):
+    # The rotation matrix around (0,0)
     r = np.float32([
         [cos(radians(theta)), sin(radians(theta)), 0],
         [-sin(radians(theta)), cos(radians(theta)), 0],
         [0, 0, 1]
     ])
 
-    if not around_center:
-        return r
-
-    height, width = img.shape
-
-    # First we need to determine the center for rotation
-    center_x, center_y = calc_center(img)
-    center_x = float(center_x)
-    center_y = float(center_y)
-
-    # First build translates matrices to rotate around the center
-    t1 = create_translate_matrix(center_x, center_y)
-    t2 = create_translate_matrix(-center_x, -center_y)
-
-    # The rotation matrix around the center
-    m = multiple_matrices([t2, r, t1])
-
-    # Now we deal with the cut off at the edges
-    # Get the cosine and sine of the angle of rotation
-    _cos = np.abs(m[0, 0])
-    _sin = np.abs(m[0, 1])
-
-    # Calculate the new height and width
-    new_width = int((height * _sin) + (width * _cos))
-    new_height = int((height * _cos) + (width * _sin))
-
-    # Add to the matrix a translation to all coordinates
-    # Fix the error around the center
-    m[0, 2] += (new_width / 2) - center_x
-    m[1, 2] += (new_height / 2) - center_y
-
-    return m
+    return r
 
 
 def create_translate_matrix(x, y):
@@ -133,24 +101,63 @@ def create_translate_matrix(x, y):
     ])
 
 
-def determine_new_boundaries(final_mat, img):
+def determine_new_boundaries_and_fix_negative_translation(final_mat, img):
     """
-    Given an original image,
-    :param final_mat:
-    :param img:
-    :return:
+    Given an original image and a geometric transformation matrix, this function
+    calculates the size of the new image.
+    If pixels are translated to negative coordinates (upwards or to the left), the function adjust the transformation
+    so that these pixels will remain in the new image, but the size of the image will be increased downwards and to the
+    right. The result is that no pixel is "cut off" the image, and boundaries are expanded, creating an "illusion"
+    of translating upwards or to the left
+    :param final_mat: the final geo transformation as composed from the given trans file
+    :param img: the original image
+    :return: the new image boundaries, and the fixed transformation matrix
     """
+    print("final_mat before: ")
+    print(final_mat)
+
     height, width = img.shape
 
+    # Calculate the new height and width of the new image
+    _cos = np.abs(final_mat[0, 0])
+    _sin = np.abs(final_mat[0, 1])
+
+    new_width = int((height * _sin) + (width * _cos))
+    new_height = int((height * _cos) + (width * _sin))
+
+    # enlarge the size of the new image according to the translation
+    trans_on_x = final_mat[0, 2]
+    trans_on_y = final_mat[1, 2]
+
+    new_width += round(abs(trans_on_x))
+    new_height += round(abs(trans_on_y))
+
+    # Now, fix negative translation
+    # Get the coordinates of the corners
     tl_x, tl_y = calc_coordinates(final_mat, 0, 0)
     tr_x, tr_y = calc_coordinates(final_mat, width - 1, 0)
     bl_x, bl_y = calc_coordinates(final_mat, 0, height - 1)
     br_x, br_y = calc_coordinates(final_mat, width - 1, height - 1)
 
-    max_width = round(max(tl_x, tr_x, bl_x, br_x))
-    max_height = round(max(tl_y, tr_y, bl_y, br_y))
+    # calculate the minimum values of each
+    min_width = round(min(tl_x, tr_x, bl_x, br_x))
+    min_height = round(min(tl_y, tr_y, bl_y, br_y))
+    print("mins")
+    print(min_width, min_height)
+    # in case one of them is negative, adjust the size of the new image
+    # and fix the translation accordingly
+    if min_height < 0:
+        new_height += round(abs(min_height))
+        trans_on_y += round(abs(min_height))
+    if min_width < 0:
+        new_width += round(abs(min_width))
+        trans_on_x += round(abs(min_width))
 
-    return max_height, max_width
+    # set the new translation scales
+    final_mat[0,2] = trans_on_x
+    final_mat[1,2] = trans_on_y
+
+    return new_height, new_width, final_mat
 
 
 def create_empty_img(h, w, color=255):
