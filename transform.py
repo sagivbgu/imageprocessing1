@@ -112,6 +112,7 @@ def determine_new_boundaries_and_fix_negative_translation(final_mat, img):
     :return: the new image boundaries, and the fixed transformation matrix
     """
     # Calculate the new height and width of the new image
+    # Based on similar triangles trigonometric
     height, width = img.shape
     _cos = np.abs(final_mat[0, 0])
     _sin = np.abs(final_mat[0, 1])
@@ -119,15 +120,9 @@ def determine_new_boundaries_and_fix_negative_translation(final_mat, img):
     new_width = int((height * _sin) + (width * _cos))
     new_height = int((height * _cos) + (width * _sin))
 
-    print("First, the new size of the image is (new_width, new_height)")
-    print(new_width, new_height)
-
     # get the sizes of the current translation
     trans_on_x = final_mat[0, 2]
     trans_on_y = final_mat[1, 2]
-
-    print("The given trans are: (trans_on_x, trans_on_y)")
-    print(trans_on_x, trans_on_y)
 
     # Get the coordinates of the corners
     tl_x, tl_y = calc_coordinates(final_mat, 0, 0)
@@ -139,43 +134,29 @@ def determine_new_boundaries_and_fix_negative_translation(final_mat, img):
     min_width = round(min(tl_x, tr_x, bl_x, br_x))
     min_height = round(min(tl_y, tr_y, bl_y, br_y))
 
-    print("the minimum coordinates of the corners are (min_width, min_height)")
-    print(min_width, min_height)
-
     # == Fixing negative translation
-    # Now calculate the most significant NEGATIVE translation
+    # Now calculate the most significant NEGATIVE translation on X axis
     if min_width < 0:
         min_width = round(abs(min_width))
         max_trans_on_x = max(round(abs(trans_on_x)), min_width)
-        print("you can see that the maximum translation on x is (max_trans_on_x)")
-        print(max_trans_on_x)
+        # Now we know the real translation on X, so adjust the size and the matrix
         new_width += max_trans_on_x
         final_mat[0, 2] += max_trans_on_x
     else:
-        print("you can see that the maximum translation on x is (round(abs(trans_on_x))")
-        print(round(abs(trans_on_x)))
+        # no pixel is translated to negative X coordinate, so just adjust the width
         new_width += round(abs(trans_on_x))
 
+    # The same, for Y axis
     if min_height < 0:
         min_height = round(abs(min_height))
         max_trans_on_y = max(round(abs(trans_on_y)), min_height)
-        print("you can see that the maximum translation on y is (max_trans_on_y)")
-        print(max_trans_on_y)
         new_height += max_trans_on_y
         final_mat[1, 2] += max_trans_on_y
     else:
-        print("you can see that the maximum translation on y is (round(abs(trans_on_y))")
-        print(round(abs(trans_on_y)))
         new_height += round(abs(trans_on_y))
 
-    print("so now the new sizes are (new_width, new_height)")
-    print(new_width, new_height)
-
-    print("and the final translation are: final_mat[0,2], final_mat[1,2]")
-    print(final_mat[0,2], final_mat[1,2])
-
     # == Check that now we are not out of bounds on the positive directions (downwards and to the right)
-    # Get the coordinates of the corners
+    # Get the NEW coordinates of the corners
     tl_x, tl_y = calc_coordinates(final_mat, 0, 0)
     tr_x, tr_y = calc_coordinates(final_mat, width - 1, 0)
     bl_x, bl_y = calc_coordinates(final_mat, 0, height - 1)
@@ -185,24 +166,15 @@ def determine_new_boundaries_and_fix_negative_translation(final_mat, img):
     max_width = round(max(tl_x, tr_x, bl_x, br_x))
     max_height = round(max(tl_y, tr_y, bl_y, br_y))
 
-    print("the maximum coordinates of the corners are (max_width, max_height)")
-    print(max_width, max_height)
-
+    # If the pixels are exceeding
     if max_width > new_width:
-        print("you can see that max_width > new_width")
-        print(max_width, new_width)
+        # adjust the new size of the image
         delta_w = round(max_width - new_width)
         new_width += delta_w
-        print("so now the new width is")
-        print(new_width)
 
     if max_height > new_height:
-        print("you can see that max_height > new_height")
-        print(max_height, new_height)
         delta_h = round(max_height - new_height)
         new_height += delta_h
-        print("so now the new height is")
-        print(new_height)
 
     return new_height, new_width, final_mat
 
