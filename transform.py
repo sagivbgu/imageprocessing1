@@ -67,6 +67,8 @@ def create_matrices(trans_gen, img):
             m = create_rotate_matrix(x, img)
         elif command == "T":
             m = create_translate_matrix(x, y)
+        else:
+            raise ValueError  # This shouldn't happen since we assume the transformation file is correct
 
         matrices.append(m)
 
@@ -155,7 +157,7 @@ def create_empty_img(h, w, color=255):
 
 def multiple_matrices(mats):
     if len(mats) > 1:
-        mats.reverse() # (Tn...(T2(T1(img))...)
+        mats.reverse()  # (Tn...(T2(T1(img))...)
         return reduce(np.dot, mats)
     else:
         return mats[0]
@@ -192,4 +194,3 @@ def add_margins(img, add_h=2, add_w=2):
             new_image[new_y, new_x] = img[y, x]
 
     return new_image
-
