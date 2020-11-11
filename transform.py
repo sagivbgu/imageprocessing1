@@ -130,13 +130,13 @@ def determine_new_boundaries_and_fix_negative_translation(final_mat, img):
     width_diff = 0
     if min_width < 0:
         # Now we know the real translation on X, so adjust the size and the matrix
-        width_diff = round(abs(min_width))
+        width_diff = abs(min_width)
         width += width_diff
 
     # The same, for Y axis
     height_diff = 0
     if min_height < 0:
-        height_diff = round(abs(min_height))
+        height_diff = abs(min_height)
         height += height_diff
 
     print("width diff: {}".format(width_diff))
@@ -157,10 +157,10 @@ def determine_new_boundaries_and_fix_negative_translation(final_mat, img):
     # If the pixels are exceeding
     if max_width > width:
         # adjust the new size of the image
-        width = round(max_width)
+        width = max_width
 
     if max_height > height:
-        height = round(max_height)
+        height = max_height
 
     print("max width: {}".format(max_width))
     print("max height: {}".format(max_height))

@@ -22,7 +22,7 @@ def interpolate(new_img, original_img, inverse_transformation, interpolation_fun
     Main interpolation loop, calling the desired interpolation function in each iteration
     """
     new_rows, new_cols = new_img.shape
-    old_rows, old_cols = original_img.shape  # margined
+    old_rows, old_cols = original_img.shape  # padded
 
     padding = 2 if interpolation_func == interpolate_cubic else 0
 
