@@ -114,11 +114,9 @@ def determine_new_boundaries_and_fix_negative_translation(final_mat, img):
     # Calculate the new height and width of the new image
     # Based on similar triangles trigonometric
     height, width = img.shape
-    _cos = np.abs(final_mat[0, 0])
-    _sin = np.abs(final_mat[0, 1])
 
-    new_width = int((height * _sin) + (width * _cos))
-    new_height = int((height * _cos) + (width * _sin))
+    new_width = width
+    new_height = height
 
     # get the sizes of the current translation
     trans_on_x = final_mat[0, 2]
@@ -126,9 +124,9 @@ def determine_new_boundaries_and_fix_negative_translation(final_mat, img):
 
     # Get the coordinates of the corners
     tl_x, tl_y = calc_coordinates(final_mat, 0, 0)
-    tr_x, tr_y = calc_coordinates(final_mat, width - 1, 0)
-    bl_x, bl_y = calc_coordinates(final_mat, 0, height - 1)
-    br_x, br_y = calc_coordinates(final_mat, width - 1, height - 1)
+    tr_x, tr_y = calc_coordinates(final_mat, width, 0)
+    bl_x, bl_y = calc_coordinates(final_mat, 0, height)
+    br_x, br_y = calc_coordinates(final_mat, width, height)
 
     # calculate the minimum values of each
     min_width = round(min(tl_x, tr_x, bl_x, br_x))
@@ -162,7 +160,7 @@ def determine_new_boundaries_and_fix_negative_translation(final_mat, img):
     bl_x, bl_y = calc_coordinates(final_mat, 0, height - 1)
     br_x, br_y = calc_coordinates(final_mat, width - 1, height - 1)
 
-    # calculate the maximum values of each
+    # calculate the minimum values of each
     max_width = round(max(tl_x, tr_x, bl_x, br_x))
     max_height = round(max(tl_y, tr_y, bl_y, br_y))
 
