@@ -111,70 +111,73 @@ def determine_new_boundaries_and_fix_negative_translation(final_mat, img):
     :param img: the original image
     :return: the new image boundaries, and the fixed transformation matrix
     """
+    # TODO: Update comments!
     # Calculate the new height and width of the new image
     # Based on similar triangles trigonometric
-    height, width = img.shape
-
-    new_width = width
-    new_height = height
-
-    # get the sizes of the current translation
-    trans_on_x = final_mat[0, 2]
-    trans_on_y = final_mat[1, 2]
+    old_height, old_width = img.shape
+    height = old_height
+    width = old_width
 
     # Get the coordinates of the corners
-    tl_x, tl_y = calc_coordinates(final_mat, 0, 0)
-    tr_x, tr_y = calc_coordinates(final_mat, width, 0)
-    bl_x, bl_y = calc_coordinates(final_mat, 0, height)
-    br_x, br_y = calc_coordinates(final_mat, width, height)
+    tl_x, tl_y, tr_x, tr_y, bl_x, bl_y, br_x, br_y = get_edges(final_mat, old_width, old_height)
 
-    # calculate the minimum values of each
+    # Calculate the minimum values of each
     min_width = round(min(tl_x, tr_x, bl_x, br_x))
     min_height = round(min(tl_y, tr_y, bl_y, br_y))
 
     # == Fixing negative translation
     # Now calculate the most significant NEGATIVE translation on X axis
+    width_diff = 0
     if min_width < 0:
-        min_width = round(abs(min_width))
-        max_trans_on_x = max(round(abs(trans_on_x)), min_width)
         # Now we know the real translation on X, so adjust the size and the matrix
-        new_width += max_trans_on_x
-        final_mat[0, 2] += max_trans_on_x
-    else:
-        # no pixel is translated to negative X coordinate, so just adjust the width
-        new_width += round(abs(trans_on_x))
+        width_diff = round(abs(min_width))
+        width += width_diff
 
     # The same, for Y axis
+    height_diff = 0
     if min_height < 0:
-        min_height = round(abs(min_height))
-        max_trans_on_y = max(round(abs(trans_on_y)), min_height)
-        new_height += max_trans_on_y
-        final_mat[1, 2] += max_trans_on_y
-    else:
-        new_height += round(abs(trans_on_y))
+        height_diff = round(abs(min_height))
+        height += height_diff
+
+    print("width diff: {}".format(width_diff))
+    print("height diff: {}".format(height_diff))
+    print("width: {}".format(width))
+    print("height: {}".format(height))
+    final_mat = multiple_matrices([final_mat, create_translate_matrix(width_diff, height_diff)])
+    print(final_mat)
 
     # == Check that now we are not out of bounds on the positive directions (downwards and to the right)
     # Get the NEW coordinates of the corners
-    tl_x, tl_y = calc_coordinates(final_mat, 0, 0)
-    tr_x, tr_y = calc_coordinates(final_mat, width - 1, 0)
-    bl_x, bl_y = calc_coordinates(final_mat, 0, height - 1)
-    br_x, br_y = calc_coordinates(final_mat, width - 1, height - 1)
+    tl_x, tl_y, tr_x, tr_y, bl_x, bl_y, br_x, br_y = get_edges(final_mat, old_width, old_height)
 
-    # calculate the minimum values of each
+    # calculate the maximum values of each
     max_width = round(max(tl_x, tr_x, bl_x, br_x))
     max_height = round(max(tl_y, tr_y, bl_y, br_y))
 
     # If the pixels are exceeding
-    if max_width > new_width:
+    if max_width > width:
         # adjust the new size of the image
-        delta_w = round(max_width - new_width)
-        new_width += delta_w
+        width = round(max_width)
 
-    if max_height > new_height:
-        delta_h = round(max_height - new_height)
-        new_height += delta_h
+    if max_height > height:
+        height = round(max_height)
 
-    return new_height, new_width, final_mat
+    print("max width: {}".format(max_width))
+    print("max height: {}".format(max_height))
+    print("width: {}".format(width))
+    print("height: {}".format(height))
+
+    return height, width, final_mat
+
+
+# TODO: Document
+def get_edges(mat, width, height):
+    tl_x, tl_y = calc_coordinates(mat, 0, 0)
+    tr_x, tr_y = calc_coordinates(mat, width, 0)
+    bl_x, bl_y = calc_coordinates(mat, 0, height)
+    br_x, br_y = calc_coordinates(mat, width, height)
+
+    return tl_x, tl_y, tr_x, tr_y, bl_x, bl_y, br_x, br_y
 
 
 def create_empty_img(h, w, color=255):
