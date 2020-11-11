@@ -40,8 +40,7 @@ def apply_geo_matrix_on_image(final_mat, img):
             new_x, new_y = calc_coordinates(final_mat, x, y)
             new_x = round(new_x)
             new_y = round(new_y)
-            if not does_exceed(new_x, new_y, new_height, new_width):  # TODO: Remove?
-                new_img[new_y, new_x] = img[y, x]
+            new_img[new_y, new_x] = img[y, x]
 
     return new_img, final_mat
 
@@ -111,7 +110,6 @@ def determine_new_boundaries_and_fix_negative_translation(final_mat, img):
     :param img: the original image
     :return: the new image boundaries, and the fixed transformation matrix
     """
-    # TODO: Update comments!
     old_height, old_width = img.shape
     height = old_height
     width = old_width
@@ -127,13 +125,13 @@ def determine_new_boundaries_and_fix_negative_translation(final_mat, img):
     # == Fixing negative translation
     width_diff = 0
     if min_width < 0:
-        width_diff = abs(min_width)
+        width_diff = abs(min_width) + 1
         width += width_diff
 
     # The same, for Y axis
     height_diff = 0
     if min_height < 0:
-        height_diff = abs(min_height)
+        height_diff = abs(min_height) + 1
         height += height_diff
 
     # Apply the translation for making the illusion of image expansion
@@ -148,12 +146,12 @@ def determine_new_boundaries_and_fix_negative_translation(final_mat, img):
     max_height = round(max(tl_y, tr_y, bl_y, br_y))
 
     # If the pixels are exceeding
-    if max_width > width:
+    if max_width >= width:
         # adjust the new size of the image
-        width = max_width
+        width = max_width + 1
 
     if max_height > height:
-        height = max_height
+        height = max_height + 1
 
     return height, width, final_mat
 
@@ -195,17 +193,6 @@ def multiple_matrices(mats):
 
 def inverse_mat(mat):
     return np.linalg.inv(mat)
-
-
-def does_exceed(x, y, h, w):
-    """
-    Check whether a pixel (x, y) is outside the boundaries of a matrix with dimensions height * width
-    :param x: The pixel's x coordinate
-    :param y: The pixel's y coordinate
-    :param h: The matrix's height
-    :param w: The matrix's width
-    """
-    return x < 0 or y < 0 or x > w - 1 or y > h - 1
 
 
 def calc_center(img):

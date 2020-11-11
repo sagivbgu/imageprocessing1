@@ -1,6 +1,6 @@
 import numpy as np
 import math
-from transform import calc_coordinates, does_exceed
+from transform import calc_coordinates
 
 MIN_INTENSITY = 0
 MAX_INTENSITY = 255
@@ -54,9 +54,10 @@ def interpolate(new_img, original_img, inverse_transformation, interpolation_fun
 def interpolate_nearest(original_img, old_x, old_y, old_rows, old_cols):
     """
     Nearest neighbor interpolation
-    Function signature follows interpolate function signature, though in this case the last arguments are not used
     """
-    return original_img[round(old_y)][round(old_x)]
+    chosen_x = old_cols - 1 if round(old_x) == old_cols else round(old_x)
+    chosen_y = old_rows - 1 if round(old_y) == old_rows else round(old_y)
+    return original_img[chosen_y][chosen_x]
 
 
 def interpolate_bilinear(original_img, old_x, old_y, old_rows, old_cols):
@@ -69,8 +70,8 @@ def interpolate_bilinear(original_img, old_x, old_y, old_rows, old_cols):
     left_x = 0 if round(old_x) == 0 else round(old_x) - 1
     right_x = left_x if left_x == old_cols - 1 else left_x + 1
 
-    width = math.fabs(old_x - left_x - 0.5)
-    height = math.fabs(old_y - bottom_y - 0.5)
+    width = abs(old_x - left_x - 0.5)
+    height = abs(old_y - bottom_y - 0.5)
 
     intensity_top = (1 - width) * original_img[top_y][left_x] + width * original_img[top_y][right_x]
     intensity_bottom = (1 - width) * original_img[bottom_y][left_x] + width * original_img[bottom_y][right_x]
@@ -89,6 +90,17 @@ def interpolate_cubic(original_img, old_x, old_y, old_rows, old_cols):
     old_y = math.floor(old_y)
     matrix_roi = original_img[old_y + start_y: old_y + start_y + 4, old_x + start_x: old_x + start_x + 4]
     return calculate_cubic_new_value(matrix_roi, weight_matrix)
+
+
+def does_exceed(x, y, h, w):
+    """
+    Check whether a pixel (x, y) is outside the boundaries of a matrix with dimensions height * width
+    :param x: The pixel's x coordinate
+    :param y: The pixel's y coordinate
+    :param h: The matrix's height
+    :param w: The matrix's width
+    """
+    return x < 0 or y < 0 or x > w or y > h
 
 
 def get_roi(fract_x, fract_y):
@@ -110,9 +122,9 @@ def u(d):
     The weight function in the interpolation formula (for a = -0.5)
     :param d: The distance (according to the formula)
     """
-    if math.fabs(d) < 1:
+    if abs(d) < 1:
         return 1.5 * (d ** 3) - 2.5 * (d ** 2) + 1
-    elif math.fabs(d) < 2:
+    elif abs(d) < 2:
         return -0.5 * (d ** 3) + 2.5 * (d ** 2) - 4 * d + 2
     return 0
 
@@ -126,7 +138,7 @@ def get_cubic_matrix(start_x, start_y, d_x, d_y):
     :param d_y: The distance to add to the calculation (y axis)
     :return:
     """
-    return tuple((tuple((u(math.fabs(x + d_x)) * u(math.fabs(y + d_y)) for x in range(start_x, start_x + 4)))
+    return tuple((tuple((u(abs(x + d_x)) * u(abs(y + d_y)) for x in range(start_x, start_x + 4)))
                   for y in range(start_y, start_y + 4)))
 
 

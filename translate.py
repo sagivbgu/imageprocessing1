@@ -57,7 +57,19 @@ def add_margins(img, add_h=2, add_w=2):
         for x in range(w):
             new_x = x + add_w
             new_y = y + add_h
-            new_image[new_y, new_x] = img[y, x]
+            new_image[new_y][new_x] = img[y][x]
+
+    # Fill the first and last rows with the same values as the first and last rows of the original image
+    for y in range(add_h):
+        for x in range(w):
+            new_image[y][x + add_w] = img[0][x]
+            new_image[-1 - y][x + add_w] = img[-1][x]
+
+    # Fill the first and columns of each row with the same values as the first and last columns of the original image
+    for x in range(add_w):
+        for y in range(h):
+            new_image[y + add_h][x] = img[y][0]
+            new_image[y + add_h][-1 - x] = img[y][-1]
 
     return new_image
 
