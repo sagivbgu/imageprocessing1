@@ -10,13 +10,13 @@ def apply_trans_on_img(trans, img):
     :param img: the image to process
     :return: The geometric transformed image, the transformations matrix and its inverse
     """
-    final_mat = transformation_to_matrices(trans, img)
+    final_mat = transformation_to_matrices(trans)
     new_img, final_mat = apply_geo_matrix_on_image(final_mat, img)
     return new_img, final_mat, inverse_mat(final_mat)
 
 
-def transformation_to_matrices(trans_gen, img):
-    return multiple_matrices(create_matrices(trans_gen, img))
+def transformation_to_matrices(trans_gen):
+    return multiple_matrices(create_matrices(trans_gen))
 
 
 def apply_geo_matrix_on_image(final_mat, img):
@@ -46,7 +46,7 @@ def apply_geo_matrix_on_image(final_mat, img):
     return new_img, final_mat
 
 
-def create_matrices(trans_gen, img):
+def create_matrices(trans_gen):
     """
     Create the correct matrices according to the list from the file
     :param trans_gen: the list of transformations
@@ -112,12 +112,11 @@ def determine_new_boundaries_and_fix_negative_translation(final_mat, img):
     :return: the new image boundaries, and the fixed transformation matrix
     """
     # TODO: Update comments!
-    # Calculate the new height and width of the new image
-    # Based on similar triangles trigonometric
     old_height, old_width = img.shape
     height = old_height
     width = old_width
 
+    # Calculate the new height and width of the new image
     # Get the coordinates of the corners
     tl_x, tl_y, tr_x, tr_y, bl_x, bl_y, br_x, br_y = get_edges(final_mat, old_width, old_height)
 
@@ -126,10 +125,8 @@ def determine_new_boundaries_and_fix_negative_translation(final_mat, img):
     min_height = round(min(tl_y, tr_y, bl_y, br_y))
 
     # == Fixing negative translation
-    # Now calculate the most significant NEGATIVE translation on X axis
     width_diff = 0
     if min_width < 0:
-        # Now we know the real translation on X, so adjust the size and the matrix
         width_diff = abs(min_width)
         width += width_diff
 
@@ -139,12 +136,8 @@ def determine_new_boundaries_and_fix_negative_translation(final_mat, img):
         height_diff = abs(min_height)
         height += height_diff
 
-    print("width diff: {}".format(width_diff))
-    print("height diff: {}".format(height_diff))
-    print("width: {}".format(width))
-    print("height: {}".format(height))
+    # Apply the translation for making the illusion of image expansion
     final_mat = multiple_matrices([final_mat, create_translate_matrix(width_diff, height_diff)])
-    print(final_mat)
 
     # == Check that now we are not out of bounds on the positive directions (downwards and to the right)
     # Get the NEW coordinates of the corners
@@ -162,16 +155,18 @@ def determine_new_boundaries_and_fix_negative_translation(final_mat, img):
     if max_height > height:
         height = max_height
 
-    print("max width: {}".format(max_width))
-    print("max height: {}".format(max_height))
-    print("width: {}".format(width))
-    print("height: {}".format(height))
-
     return height, width, final_mat
 
 
-# TODO: Document
 def get_edges(mat, width, height):
+    """
+    Get the coordinates of the image's corners after applying the transformation matrix
+    :param mat: The transformation matrix
+    :param width: The image's width
+    :param height: The image's height
+    :return: The coordinates of the corners after applying the transformation. tl stands for top-left,
+    br stands for bottom-right, etc.
+    """
     tl_x, tl_y = calc_coordinates(mat, 0, 0)
     tr_x, tr_y = calc_coordinates(mat, width, 0)
     bl_x, bl_y = calc_coordinates(mat, 0, height)
