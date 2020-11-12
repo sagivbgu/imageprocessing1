@@ -125,13 +125,13 @@ def determine_new_boundaries_and_fix_negative_translation(final_mat, img):
     # == Fixing negative translation
     width_diff = 0
     if min_width < 0:
-        width_diff = abs(min_width) + 1
+        width_diff = abs(min_width)
         width += width_diff
 
     # The same, for Y axis
     height_diff = 0
     if min_height < 0:
-        height_diff = abs(min_height) + 1
+        height_diff = abs(min_height)
         height += height_diff
 
     # Apply the translation for making the illusion of image expansion
@@ -148,10 +148,10 @@ def determine_new_boundaries_and_fix_negative_translation(final_mat, img):
     # If the pixels are exceeding
     if max_width >= width:
         # adjust the new size of the image
-        width = max_width + 1
+        width = max_width
 
     if max_height > height:
-        height = max_height + 1
+        height = max_height
 
     return height, width, final_mat
 
