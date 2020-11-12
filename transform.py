@@ -40,7 +40,7 @@ def apply_geo_matrix_on_image(final_mat, img):
             new_x, new_y = calc_coordinates(final_mat, x, y)
             new_x = round(new_x)
             new_y = round(new_y)
-    #            new_img[new_y, new_x] = img[y, x]
+            new_img[new_y, new_x] = img[y, x]
 
     return new_img, final_mat
 
