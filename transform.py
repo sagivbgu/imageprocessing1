@@ -40,7 +40,7 @@ def apply_geo_matrix_on_image(final_mat, img):
             new_x, new_y = calc_coordinates(final_mat, x, y)
             new_x = round(new_x)
             new_y = round(new_y)
-#            new_img[new_y, new_x] = img[y, x]
+    #            new_img[new_y, new_x] = img[y, x]
 
     return new_img, final_mat
 
@@ -132,25 +132,26 @@ def determine_new_boundaries_and_fix_negative_translation(final_mat, img):
     print(max_y)
 
     # Calculate the new image width
-    if max_x >= 0 and min_x < 0:
-        width = max_x - min_x
-    elif max_x >= 0 and min_x >= 0:
-        width = max_x
-    else:  # max_x < 0 and min_x < 0
-        width = abs(min_x)
 
     # The translation needed to handle negative values
     width_diff = abs(min_x) if min_x < 0 else 0
 
+    if max_x >= 0 and min_x < 0:
+        width = max_x - min_x + width_diff
+    elif max_x >= 0 and min_x >= 0:
+        width = max_x
+    else:  # max_x < 0 and min_x < 0
+        width = width_diff
+
     # The same, for Y axis
+    height_diff = abs(min_y) if min_y < 0 else 0
+
     if max_y >= 0 and min_y < 0:
-        height = max_y - min_y
+        height = max_y - min_y + height_diff
     elif max_y >= 0 and min_y >= 0:
         height = max_y
-    else:
-        height = abs(min_y)
-
-    height_diff = abs(min_y) if min_y < 0 else 0
+    else:  # max_x < 0 and min_x < 0
+        height = height_diff
 
     # Apply the translation for making the illusion of image expansion
     final_mat = multiple_matrices([final_mat, create_translate_matrix(width_diff, height_diff)])
