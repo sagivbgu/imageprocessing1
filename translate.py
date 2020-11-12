@@ -25,6 +25,8 @@ def translate_image(image_path, transformations_path, quality):
     transformations = load_trans_file(transformations_path)
 
     new_img, mat, inv_mat = transform.apply_trans_on_img(transformations, img)
+    print("Inv mat:")
+    print(inv_mat)
 
     if quality == "N":
         interpolate(new_img, img, inv_mat, interpolate_nearest)

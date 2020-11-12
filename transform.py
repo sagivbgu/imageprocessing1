@@ -40,7 +40,7 @@ def apply_geo_matrix_on_image(final_mat, img):
             new_x, new_y = calc_coordinates(final_mat, x, y)
             new_x = round(new_x)
             new_y = round(new_y)
-            new_img[new_y, new_x] = img[y, x]
+#            new_img[new_y, new_x] = img[y, x]
 
     return new_img, final_mat
 
@@ -111,48 +111,54 @@ def determine_new_boundaries_and_fix_negative_translation(final_mat, img):
     :return: the new image boundaries, and the fixed transformation matrix
     """
     old_height, old_width = img.shape
-    height = old_height
-    width = old_width
 
     # Calculate the new height and width of the new image
     # Get the coordinates of the corners
     tl_x, tl_y, tr_x, tr_y, bl_x, bl_y, br_x, br_y = get_edges(final_mat, old_width, old_height)
 
-    # Calculate the minimum values of each
-    min_width = round(min(tl_x, tr_x, bl_x, br_x))
-    min_height = round(min(tl_y, tr_y, bl_y, br_y))
+    # Calculate the minimum and maximum values of each
+    min_x = round(min(tl_x, tr_x, bl_x, br_x))
+    max_x = round(max(tl_x, tr_x, bl_x, br_x))
+    min_y = round(min(tl_y, tr_y, bl_y, br_y))
+    max_y = round(max(tl_y, tr_y, bl_y, br_y))
 
-    # == Fixing negative translation
-    width_diff = 0
-    if min_width < 0:
-        width_diff = abs(min_width) + 1
-        width += width_diff
+    print("min_x")
+    print(min_x)
+    print("max_x")
+    print(max_x)
+    print("min_y")
+    print(min_y)
+    print("max_y")
+    print(max_y)
+
+    # Calculate the new image width
+    if max_x >= 0 and min_x < 0:
+        width = max_x - min_x
+    elif max_x >= 0 and min_x >= 0:
+        width = max_x
+    else:  # max_x < 0 and min_x < 0
+        width = abs(min_x)
+
+    # The translation needed to handle negative values
+    width_diff = abs(min_x) if min_x < 0 else 0
 
     # The same, for Y axis
-    height_diff = 0
-    if min_height < 0:
-        height_diff = abs(min_height) + 1
-        height += height_diff
+    if max_y >= 0 and min_y < 0:
+        height = max_y - min_y
+    elif max_y >= 0 and min_y >= 0:
+        height = max_y
+    else:
+        height = abs(min_y)
+
+    height_diff = abs(min_y) if min_y < 0 else 0
 
     # Apply the translation for making the illusion of image expansion
     final_mat = multiple_matrices([final_mat, create_translate_matrix(width_diff, height_diff)])
 
-    # == Check that now we are not out of bounds on the positive directions (downwards and to the right)
-    # Get the NEW coordinates of the corners
-    tl_x, tl_y, tr_x, tr_y, bl_x, bl_y, br_x, br_y = get_edges(final_mat, old_width, old_height)
-
-    # calculate the maximum values of each
-    max_width = round(max(tl_x, tr_x, bl_x, br_x))
-    max_height = round(max(tl_y, tr_y, bl_y, br_y))
-
-    # If the pixels are exceeding
-    if max_width >= width:
-        # adjust the new size of the image
-        width = max_width + 1
-
-    if max_height > height:
-        height = max_height + 1
-
+    print("width")
+    print(width)
+    print("height")
+    print(height)
     return height, width, final_mat
 
 
