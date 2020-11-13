@@ -36,13 +36,14 @@ def interpolate(new_img, original_img, inverse_transformation, interpolation_fun
             # got the x,y without(!!) considering padding
             old_x, old_y = calc_coordinates(inverse_transformation, new_x, new_y)
             # check if it exceeded the original image (notice that old_rows and old_cols are normalized)
-            if does_exceed(round(old_x), round(old_y), old_rows, old_cols):
+            if does_exceed(old_x, old_y, old_rows, old_cols):
                 continue
 
             # here the pixel is in the original image
             # but the interpolate function needs its coordinates in the padded original image
             old_x += padding
             old_y += padding
+
             new_value = interpolation_func(original_img, old_x, old_y, old_rows, old_cols)
             if new_value < MIN_INTENSITY:
                 new_value = MIN_INTENSITY
@@ -100,7 +101,15 @@ def does_exceed(x, y, h, w):
     :param h: The matrix's height
     :param w: The matrix's width
     """
-    return x < 0 or y < 0 or x > w or y > h
+    # notice here that h and w are absolute sizes (meaning, starting from 1)
+    # and x and y are zero-based, so we need to compare them to h - 1 and w - 1
+    # we should use here x and y after FLOORING, because:
+    #   for x, i <= x < i + 1
+    #   for y, j <= y < j + 1
+    # (x,y) is inside pixel (i,j)
+    x = math.floor(x)
+    y = math.floor(y)
+    return x < 0 or y < 0 or x > (w - 1) or y > (h - 1)
 
 
 def get_roi(fract_x, fract_y):
