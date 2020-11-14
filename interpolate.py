@@ -101,15 +101,9 @@ def does_exceed(x, y, h, w):
     :param h: The matrix's height
     :param w: The matrix's width
     """
-    # notice here that h and w are absolute sizes (meaning, starting from 1)
-    # and x and y are zero-based, so we need to compare them to h - 1 and w - 1
-    # we should use here x and y after FLOORING, because:
-    #   for x, i <= x < i + 1
-    #   for y, j <= y < j + 1
-    # (x,y) is inside pixel (i,j)
-    x = math.floor(x)
-    y = math.floor(y)
-    return x < 0 or y < 0 or x > (w - 1) or y > (h - 1)
+    # Each interpolate function deals with the case when round(x) = w,
+    # and when round(x) = 0 (and the same with y axis). So we allow the rounds of x and y to be 0 and w or h.
+    return x <= -0.5 or y <= -0.5 or x >= w + 0.5 or y >= h + 0.5
 
 
 def get_roi(fract_x, fract_y):
