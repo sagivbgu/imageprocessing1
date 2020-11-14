@@ -34,7 +34,10 @@ def apply_geo_matrix_on_image(final_mat, img):
     # Create a new fitting image; all pixels are set to WHITE
     new_img = create_empty_img(new_height, new_width)
 
-    # copy old pixels to their new position
+    # Copy old pixels to their new position
+    # Actually, there's no need to do it here since the new image is created by the interpolation functions.
+    # Yet, it's convenient for debugging, and also - before performing cubic interpolation we need to copy the pixels
+    # on the edges to the padding, so we prepare the matrix here.
     for y in range(old_height):
         for x in range(old_width):
             new_x, new_y = calc_coordinates(final_mat, x, y)
